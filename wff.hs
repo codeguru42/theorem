@@ -9,3 +9,8 @@ type Name = Char
 data Wff = Var Name
          | Not Wff
          | Or Wff Wff
+
+instance Show Wff
+         where show (Var p) = [p]
+               show (Not a) = '~' : show a
+               show (Or a b) = ('[' : show a) ++ ('|' : show b) ++ "]"
