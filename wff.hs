@@ -14,3 +14,16 @@ instance Show Wff
          where show (Var p) = [p]
                show (Not a) = '~' : show a
                show (Or a b) = ('[' : show a) ++ ('|' : show b) ++ "]"
+
+parse :: String -> Wff
+parse = fst . parse'
+        where parse' ('~':rest) = (Not a, rest')
+                where (a, rest') = parse' rest
+              parse' ('[':rest) = (a `Or` b, rest'')
+                where (a, ('|':rest') ) = parse' rest
+                      (b, (']':rest'')) = parse' rest'
+              parse' (c:rest) = (Var c, rest)
+
+main = do
+  print $ parse "[~p|q]"
+  print $ parse "[[~p|q]|r]"
