@@ -4,26 +4,67 @@
 -- To Public License, Version 2, as published by Sam Hocevar. See
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
+import Data.Char(isLower)
+
 type Name = Char
 
 data Wff = Var Name
          | Not Wff
          | Or Wff Wff
+         deriving (Eq)
 
 instance Show Wff
          where show (Var p) = [p]
                show (Not a) = '~' : show a
                show (Or a b) = ('[' : show a) ++ ('|' : show b) ++ "]"
 
-parse :: String -> Wff
-parse = fst . parse'
-        where parse' ('~':rest) = (Not a, rest')
-                where (a, rest') = parse' rest
-              parse' ('[':rest) = (a `Or` b, rest'')
-                where (a, ('|':rest') ) = parse' rest
-                      (b, (']':rest'')) = parse' rest'
-              parse' (c:rest) = (Var c, rest)
+parse :: String -> Maybe Wff
+parse s
+  | null rest = wff
+  | otherwise = Nothing
+    where (wff, rest) = parse' s
+          parse' ('~':rest) = (x, rest')
+            where (a', rest') = parse' rest
+                  x = if a' == Nothing
+                      then Nothing
+                      else let Just a = a'
+                           in Just $ Not a
+          parse' ('[':rest) = (x, if null rest''
+                                  then ""
+                                  else tail rest'')
+            where (a', rest') = parse' rest
+                  (b', rest'') = parse' (if null rest'
+                                         then ""
+                                         else tail rest')
+                  x = if null rest'
+                         || a' == Nothing
+                         || null rest''
+                         || b' == Nothing
+                         || head rest' /= '|'
+                         || head rest'' /= ']'
+                      then Nothing
+                      else let Just a = a'
+                               Just b = b'
+                           in Just $ a `Or` b
+          parse' s@(c:rest)
+            | isLower c  = (Just $ Var c, rest)
+            | otherwise = (Nothing, s)
+          parse' _ = (Nothing, [])
 
 main = do
   print $ parse "[~p|q]"
   print $ parse "[[~p|q]|r]"
+  print $ parse "~A"
+  print $ parse "a~b"
+  print $ parse "a|"
+  print $ parse "a|b"
+  print $ parse "~"
+  print $ parse "~a"
+  print $ parse "a~"
+  print $ parse "["
+  print $ parse "[a"
+  print $ parse "[a]"
+  print $ parse "[a|"
+  print $ parse "[a|b"
+  print $ parse "[a|]"
+  print $ parse "[|]"
