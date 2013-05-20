@@ -52,19 +52,20 @@ parse s
           parse' _ = (Nothing, [])
 
 main = do
-  print $ parse "[~p|q]"
-  print $ parse "[[~p|q]|r]"
-  print $ parse "~A"
-  print $ parse "a~b"
-  print $ parse "a|"
-  print $ parse "a|b"
-  print $ parse "~"
-  print $ parse "~a"
-  print $ parse "a~"
-  print $ parse "["
-  print $ parse "[a"
-  print $ parse "[a]"
-  print $ parse "[a|"
-  print $ parse "[a|b"
-  print $ parse "[a|]"
-  print $ parse "[|]"
+  mapM_ (print . parse) tests
+  where tests = ["[~p|q]",
+                 "[[~p|q]|r]",
+                 "~A",
+                 "a~b",
+                 "a|",
+                 "a|b",
+                 "~",
+                 "~a",
+                 "a~",
+                 "[",
+                 "[a",
+                 "[a|",
+                 "[a|b",
+                 "[a|]",
+                 "[|]"
+                ]
