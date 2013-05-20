@@ -52,7 +52,7 @@ parse s
           parse' _ = (Nothing, [])
 
 main = do
-  mapM_ (print . parse) tests
+  mapM_ print $ zip tests $ map parse tests
   where tests = ["[~p|q]",
                  "[[~p|q]|r]",
                  "~A",
