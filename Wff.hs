@@ -59,4 +59,11 @@ parse s
           parse' _ = (Nothing, [])
 
 isAxiom :: Wff -> Bool
-isAxiom wff = False
+-- Axiom Schemata 3
+isAxiom (Not (Not a `Or` b) `Or` (Not (c `Or` d) `Or` (e `Or` f))) =
+  a == d && b == e && c == f
+-- Axiom Schemata 2
+isAxiom (Not a `Or` (b `Or` c)) = a == c
+-- Axiom Schemata 1
+isAxiom ((Not (a `Or` b)) `Or` c) = a == b && a == c
+isAxiom _ = False
