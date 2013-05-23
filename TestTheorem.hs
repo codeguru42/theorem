@@ -4,7 +4,8 @@
 -- To Public License, Version 2, as published by Sam Hocevar. See
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
-import Wff(parse)
+import Data.Maybe (mapMaybe)
+import Wff (parse, isAxiom)
 
 testParse = do
   mapM_ print $ zip tests $ map parse tests
@@ -25,4 +26,18 @@ testParse = do
                  "[|]"
                 ]
 
-main = testParse
+testIsAxiom = do
+  let wffs = mapMaybe parse tests
+  mapM_ print $ zip wffs $ map isAxiom wffs
+  where tests = ["[~p|q]",
+                 "[[~p|q]|r]",
+                 "[~[a|a]|a]",
+                 "[~a|[b|a]]",
+                 "[~[~a|b]|[~[c|a]|[b|c]]]"
+                ]
+
+main = do
+  print "**** Test parse ****"
+  testParse
+  print "**** Test isAxiom *****"
+  testIsAxiom

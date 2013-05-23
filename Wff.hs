@@ -7,7 +7,8 @@
 module Wff
        (Wff,
         Name,
-        parse
+        parse,
+        isAxiom
        ) where
 
 import Data.Char(isLower)
@@ -56,3 +57,6 @@ parse s
             | isLower c  = (Just $ Var c, rest)
             | otherwise = (Nothing, s)
           parse' _ = (Nothing, [])
+
+isAxiom :: Wff -> Bool
+isAxiom wff = False
