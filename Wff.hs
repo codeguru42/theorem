@@ -4,6 +4,12 @@
 -- To Public License, Version 2, as published by Sam Hocevar. See
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
+module Wff
+       (Wff,
+        Name,
+        parse
+       ) where
+
 import Data.Char(isLower)
 
 type Name = Char
@@ -50,22 +56,3 @@ parse s
             | isLower c  = (Just $ Var c, rest)
             | otherwise = (Nothing, s)
           parse' _ = (Nothing, [])
-
-main = do
-  mapM_ print $ zip tests $ map parse tests
-  where tests = ["[~p|q]",
-                 "[[~p|q]|r]",
-                 "~A",
-                 "a~b",
-                 "a|",
-                 "a|b",
-                 "~",
-                 "~a",
-                 "a~",
-                 "[",
-                 "[a",
-                 "[a|",
-                 "[a|b",
-                 "[a|]",
-                 "[|]"
-                ]
