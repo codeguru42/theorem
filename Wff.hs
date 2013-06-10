@@ -11,7 +11,8 @@ module Wff
         isAxiom
        ) where
 
-import Data.Char(isLower)
+import Control.Applicative ((<$>), (<*>))
+import Data.Char (isLower)
 
 type Name = Char
 
@@ -31,32 +32,25 @@ parse s
   | otherwise = Nothing
     where (wff, rest) = parse' s
           parse' ('~':rest) = (x, rest')
-            where (a', rest') = parse' rest
-                  x = if a' == Nothing
-                      then Nothing
-                      else let Just a = a'
-                           in Just $ Not a
+            where (a, rest') = parse' rest
+                  x = Not <$> a
           parse' ('[':rest) = (x, if null rest''
                                   then ""
                                   else tail rest'')
-            where (a', rest') = parse' rest
-                  (b', rest'') = parse' (if null rest'
-                                         then ""
-                                         else tail rest')
+            where (a, rest') = parse' rest
+                  (b, rest'') = parse' (if null rest'
+                                        then ""
+                                        else tail rest')
                   x = if null rest'
-                         || a' == Nothing
                          || null rest''
-                         || b' == Nothing
                          || head rest' /= '|'
                          || head rest'' /= ']'
                       then Nothing
-                      else let Just a = a'
-                               Just b = b'
-                           in Just $ a `Or` b
+                      else Or <$> a <*> b
           parse' s@(c:rest)
             | isLower c  = (Just $ Var c, rest)
             | otherwise = (Nothing, s)
-          parse' _ = (Nothing, [])
+          parse' [] = (Nothing, [])
 
 isAxiom :: Wff -> Bool
 -- Axiom Schemata 3
