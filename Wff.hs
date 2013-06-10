@@ -5,7 +5,7 @@
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
 module Wff
-       (Wff,
+       (Wff(..),
         Name,
         parse,
         isAxiom
