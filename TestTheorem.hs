@@ -11,7 +11,7 @@ import Wff (Wff(..), parse, isAxiom)
 
 testParse :: Test
 testParse = "Test parse" ~:
-            TestList $ map (\(e, i) -> e ~=? parse i) tests
+            TestList $ map (\(e, i) -> i ~: e ~=? parse i) tests
   where tests = [(Just $ (Not $ Var 'p') `Or` (Var 'q'), "[~p|q]"),
                  (Just $ (Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r'),
                   "[[~p|q]|r]"),
@@ -32,7 +32,8 @@ testParse = "Test parse" ~:
 
 testIsAxiom :: Test
 testIsAxiom = "Test isAxiom" ~:
-              TestList $ map (\(e, i) -> Just e ~=? isAxiom <$> parse i) tests
+              TestList $
+              map (\(e, i) -> i ~: Just e ~=? isAxiom <$> parse i) tests
   where tests = [(False, "[~p|q]"),
                  (False, "[[~p|q]|r]"),
                  (True, "[~[a|a]|a]"),
