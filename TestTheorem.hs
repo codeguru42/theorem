@@ -4,40 +4,42 @@
 -- To Public License, Version 2, as published by Sam Hocevar. See
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
-import Data.Maybe (mapMaybe)
-import Wff (parse, isAxiom)
+import Control.Applicative ((<$>))
+import Test.HUnit.Base (Test(..), (~=?), (~:))
+import Test.HUnit.Text (runTestTT)
+import Wff (Wff(..), parse, isAxiom)
 
-testParse = do
-  mapM_ print $ zip tests $ map parse tests
-  where tests = ["[~p|q]",
-                 "[[~p|q]|r]",
-                 "~A",
-                 "a~b",
-                 "a|",
-                 "a|b",
-                 "~",
-                 "~a",
-                 "a~",
-                 "[",
-                 "[a",
-                 "[a|",
-                 "[a|b",
-                 "[a|]",
-                 "[|]"
+testParse :: Test
+testParse = "Test parse" ~:
+            TestList $ map (\(e, i) -> e ~=? parse i) tests
+  where tests = [(Just $ (Not $ Var 'p') `Or` (Var 'q'), "[~p|q]"),
+                 (Just $ (Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r'),
+                  "[[~p|q]|r]"),
+                 (Nothing, "~A"),
+                 (Nothing, "a~b"),
+                 (Nothing, "a|"),
+                 (Nothing, "a|b"),
+                 (Nothing, "~"),
+                 (Just . Not $ Var 'a', "~a"),
+                 (Nothing, "a~"),
+                 (Nothing, "["),
+                 (Nothing, "[a"),
+                 (Nothing, "[a|"),
+                 (Nothing, "[a|b"),
+                 (Nothing, "[a|]"),
+                 (Nothing, "[|]")
                 ]
 
-testIsAxiom = do
-  let wffs = mapMaybe parse tests
-  mapM_ print $ zip wffs $ map isAxiom wffs
-  where tests = ["[~p|q]",
-                 "[[~p|q]|r]",
-                 "[~[a|a]|a]",
-                 "[~a|[b|a]]",
-                 "[~[~a|b]|[~[c|a]|[b|c]]]"
+testIsAxiom :: Test
+testIsAxiom = "Test isAxiom" ~:
+              TestList $ map (\(e, i) -> Just e ~=? isAxiom <$> parse i) tests
+  where tests = [(False, "[~p|q]"),
+                 (False, "[[~p|q]|r]"),
+                 (True, "[~[a|a]|a]"),
+                 (True, "[~a|[b|a]]"),
+                 (True, "[~[~a|b]|[~[c|a]|[b|c]]]")
                 ]
 
 main = do
-  print "**** Test parse ****"
-  testParse
-  print "**** Test isAxiom *****"
-  testIsAxiom
+  runTestTT $ TestList [testParse,
+                        testIsAxiom]
