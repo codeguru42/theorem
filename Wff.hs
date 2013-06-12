@@ -34,19 +34,19 @@ parse s
           parse' ('~':rest) = (x, rest')
             where (a, rest') = parse' rest
                   x = Not <$> a
-          parse' ('[':rest) = (x, if null rest''
-                                  then ""
-                                  else tail rest'')
-            where (a, rest') = parse' rest
-                  (b, rest'') = parse' (if null rest'
-                                        then ""
-                                        else tail rest')
-                  x = if null rest'
-                         || null rest''
-                         || head rest' /= '|'
-                         || head rest'' /= ']'
-                      then Nothing
-                      else Or <$> a <*> b
+          parse' ('[':rest)
+            | null rest'' = (Nothing, "")
+            | otherwise = (x, tail rest'')
+              where (a, rest') = parse' rest
+                    (b, rest'') = if null rest'
+                                  then (Nothing, "")
+                                  else parse' $ tail rest'
+                    x = if null rest'
+                           || null rest''
+                           || head rest' /= '|'
+                           || head rest'' /= ']'
+                        then Nothing
+                        else Or <$> a <*> b
           parse' s@(c:rest)
             | isLower c  = (Just $ Var c, rest)
             | otherwise = (Nothing, s)
