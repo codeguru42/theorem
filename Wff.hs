@@ -28,22 +28,15 @@ instance Show Wff
 
 parse :: String -> Maybe Wff
 parse s = do
-  (x, rest) <- parse' s
-  guard $ null rest
+  (x, "") <- parse' s
   Just x
     where  parse' ('~':rest) = do
-             guard . not $ null rest
              (a, rest') <- parse' rest
              Just (Not a, rest')
            parse' ('[':rest) = do
-             guard . not $ null rest
-             (a, rest') <- parse' rest
-             guard . not $ null rest'
-             guard $ head rest' == '|'
-             (b, rest'') <- parse' $ tail rest'
-             guard . not $ null rest''
-             guard $ head rest'' == ']'
-             Just (a `Or` b, tail rest'')
+             (a, ('|':rest')) <- parse' rest
+             (b, (']':rest'')) <- parse' rest'
+             Just (a `Or` b, rest'')
            parse' (c:rest) = do
              guard $ isLower c
              Just (Var c, rest)
