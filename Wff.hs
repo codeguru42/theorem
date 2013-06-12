@@ -11,7 +11,7 @@ module Wff
         isAxiom
        ) where
 
-import Control.Applicative ((<$>), (<*>))
+import Control.Monad (guard)
 import Data.Char (isLower)
 
 type Name = Char
@@ -27,30 +27,27 @@ instance Show Wff
                show (Or a b) = ('[' : show a) ++ ('|' : show b) ++ "]"
 
 parse :: String -> Maybe Wff
-parse s
-  | null rest = wff
-  | otherwise = Nothing
-    where (wff, rest) = parse' s
-          parse' ('~':rest) = (x, rest')
-            where (a, rest') = parse' rest
-                  x = Not <$> a
-          parse' ('[':rest)
-            | null rest'' = (Nothing, "")
-            | otherwise = (x, tail rest'')
-              where (a, rest') = parse' rest
-                    (b, rest'') = if null rest'
-                                  then (Nothing, "")
-                                  else parse' $ tail rest'
-                    x = if null rest'
-                           || null rest''
-                           || head rest' /= '|'
-                           || head rest'' /= ']'
-                        then Nothing
-                        else Or <$> a <*> b
-          parse' s@(c:rest)
-            | isLower c  = (Just $ Var c, rest)
-            | otherwise = (Nothing, s)
-          parse' [] = (Nothing, [])
+parse s = do
+  (x, rest) <- parse' s
+  guard $ null rest
+  Just x
+    where  parse' ('~':rest) = do
+             guard . not $ null rest
+             (a, rest') <- parse' rest
+             Just (Not a, rest')
+           parse' ('[':rest) = do
+             guard . not $ null rest
+             (a, rest') <- parse' rest
+             guard . not $ null rest'
+             guard $ head rest' == '|'
+             (b, rest'') <- parse' $ tail rest'
+             guard . not $ null rest''
+             guard $ head rest'' == ']'
+             Just (a `Or` b, tail rest'')
+           parse' (c:rest) = do
+             guard $ isLower c
+             Just (Var c, rest)
+           parse' [] = Nothing
 
 isAxiom :: Wff -> Bool
 -- Axiom Schemata 3
