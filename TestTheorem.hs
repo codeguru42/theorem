@@ -10,8 +10,8 @@ import Test.HUnit.Text (runTestTT)
 import Wff (Wff(..), parse, isAxiom)
 
 testParse :: Test
-testParse = "Test parse" ~:
-            TestList $ map (\(e, i) -> i ~: e ~=? parse i) tests
+testParse = "Test parse"
+            ~: TestList $ map (\(e, i) -> i ~: e ~=? parse i) tests
   where tests = [(Just $ (Not $ Var 'p') `Or` (Var 'q'), "[~p|q]"),
                  (Just $ (Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r'),
                   "[[~p|q]|r]"),
@@ -27,18 +27,31 @@ testParse = "Test parse" ~:
                  (Nothing, "[a|"),
                  (Nothing, "[a|b"),
                  (Nothing, "[a|]"),
-                 (Nothing, "[|]")
+                 (Nothing, "[|]"),
+                 (Just $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'),
+                  "[~[p|p]|p]"),
+                 (Just $ (Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
+                  `Or` (Var 'p' `Or` (Not $ Var 'p')),
+                  "[~[~p|[p|p]]|[p|~p]]"),
+                 (Just $
+                  (Not $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'))
+                  `Or` ((Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
+                        `Or` (Var 'p' `Or` (Not $ Var 'p'))),
+                  "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
                 ]
 
 testIsAxiom :: Test
-testIsAxiom = "Test isAxiom" ~:
-              TestList $
-              map (\(e, i) -> i ~: Just e ~=? isAxiom <$> parse i) tests
+testIsAxiom = "Test isAxiom"
+              ~: TestList
+              $ map (\(e, i) -> i ~: Just e ~=? isAxiom <$> parse i) tests
   where tests = [(False, "[~p|q]"),
                  (False, "[[~p|q]|r]"),
                  (True, "[~[a|a]|a]"),
                  (True, "[~a|[b|a]]"),
-                 (True, "[~[~a|b]|[~[c|a]|[b|c]]]")
+                 (True, "[~[~a|b]|[~[c|a]|[b|c]]]"),
+                 (True, "[~[p|p]|p]"),
+                 (False, "[~[~p|[p|p]]|[p|~p]]"),
+                 (True, "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
                 ]
 
 main = do
