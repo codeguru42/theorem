@@ -57,12 +57,21 @@ isProof :: [Wff] -> [Wff] -> Bool
 isProof given proof = all isValidStep proof
   where isValidStep x = isAxiom x
                         || x `elem` given
-                        || isModusPonens x
-                        || isSubstitution x
-        isModusPonens b = any (`elem` prev) $ map (\a -> (Not a) `Or` b) prev
-          where prev = takeWhile (/= b) proof
-        isSubstitution x = isSubstitution' [] x
-          where isSubstitution' subs (Not a) = isSubstitution' subs a
-                isSubstitution' subs (a `Or` b) = isSubstitution' subs a
-                                                  && isSubstitution' subs b
-                isSubstitution' subs (Var p) = True -- Not correct
+                        || isModusPonens x (prev x)
+                        || any (isSubstitution x) (prev x)
+        isModusPonens b prev = any (`elem` prev)
+                               $ map (\a -> (Not a) `Or` b) prev
+        isSubstitution x' x = fst $ isSubstitution' [] x' x
+          where isSubstitution' subs (Not a') (Not a)
+                  = isSubstitution' subs a' a
+                isSubstitution' subs (a' `Or` b') (a `Or` b)
+                  = (lSub && rSub, subs'')
+                  where (lSub, subs') = isSubstitution' subs a' a
+                        (rSub, subs'') =  isSubstitution' subs b' b
+                isSubstitution' subs wff (Var p)  = if sub == Nothing
+                                                   then (True,
+                                                         (Var p, wff):subs)
+                                                   else (Just wff == sub, subs)
+                  where sub = lookup (Var p) subs
+                isSubstitution' subs _ _ = (False, subs)
+        prev x = takeWhile (/= x) proof
