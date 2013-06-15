@@ -58,5 +58,11 @@ isProof given proof = all isValidStep proof
   where isValidStep x = isAxiom x
                         || x `elem` given
                         || isModusPonens x
+                        || isSubstitution x
         isModusPonens b = any (`elem` prev) $ map (\a -> (Not a) `Or` b) prev
           where prev = takeWhile (/= b) proof
+        isSubstitution x = isSubstitution' [] x
+          where isSubstitution' subs (Not a) = isSubstitution' subs a
+                isSubstitution' subs (a `Or` b) = isSubstitution' subs a
+                                                  && isSubstitution' subs b
+                isSubstitution' subs (Var p) = True -- Not correct

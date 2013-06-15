@@ -66,6 +66,11 @@ testIsProof = "Test isProof"
                    "[~p|[p|p]]",
                    "[p|~p]"
                   ]
+                 ),
+                 (True, ["[p|~p]"],
+                  ["[p|~p]",
+                   "[~p|~~p]"
+                  ]
                  )
                 ]
         parseWffs = catMaybes . map parse
