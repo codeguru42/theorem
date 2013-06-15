@@ -57,9 +57,11 @@ testIsAxiom = "Test isAxiom"
 
 testIsProof = "Test isProof"
               ~: TestList
-              $ map (\(e, g, i) -> e ~=? isProof (parseWffs g) (parseWffs i))
+              $ map (\(e, g, i) ->
+                      last i ~: e ~=? isProof (parseWffs g) (parseWffs i))
               tests
-  where tests = [(True, [],
+  where tests = [(True,
+                  [],
                   ["[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]",
                    "[~[p|p]|p]",
                    "[~[~p|[p|p]]|[p|~p]]",
@@ -67,9 +69,26 @@ testIsProof = "Test isProof"
                    "[p|~p]"
                   ]
                  ),
-                 (True, ["[p|~p]"],
+                 (True,
+                  ["[p|~p]"],
                   ["[p|~p]",
                    "[~p|~~p]"
+                  ]
+                 ),
+                 (False,
+                  ["[~p|~~p]"],
+                  ["[~~~p|p]"
+                  ]
+                 ),
+                 (True,
+                  ["[p|~p]",
+                   "[~p|~~p]"],
+                  ["[~[~~p|~~~p]|[~[p|~p]|[~~~p|p]]]",
+                   "[~p|~~p]",
+                   "[~~p|~~~p]",
+                   "[~[p|~p]|[~~~p|p]]",
+                   "[p|~p]",
+                   "[~~~p|p]"
                   ]
                  )
                 ]
