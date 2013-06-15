@@ -5,9 +5,10 @@
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
 import Control.Applicative ((<$>))
+import Data.Maybe (catMaybes)
 import Test.HUnit.Base (Test(..), (~=?), (~:))
 import Test.HUnit.Text (runTestTT)
-import Wff (Wff(..), parse, isAxiom)
+import Wff
 
 testParse :: Test
 testParse = "Test parse"
@@ -54,6 +55,22 @@ testIsAxiom = "Test isAxiom"
                  (True, "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
                 ]
 
+testIsProof = "Test isProof"
+              ~: TestList
+              $ map (\(e, g, i) -> e ~=? isProof (parseWffs g) (parseWffs i))
+              tests
+  where tests = [(True, [],
+                  ["[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]",
+                   "[~[p|p]|p]",
+                   "[~[~p|[p|p]]|[p|~p]]",
+                   "[~p|[p|p]]",
+                   "[p|~p]"
+                  ]
+                 )
+                ]
+        parseWffs = catMaybes . map parse
+
 main = do
   runTestTT $ TestList [testParse,
-                        testIsAxiom]
+                        testIsAxiom,
+                        testIsProof]

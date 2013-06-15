@@ -8,7 +8,8 @@ module Wff
        (Wff(..),
         Name,
         parse,
-        isAxiom
+        isAxiom,
+        isProof
        ) where
 
 import Control.Monad (guard)
@@ -51,3 +52,11 @@ isAxiom (Not a `Or` (b `Or` c)) = a == c
 -- Axiom Schemata 1
 isAxiom ((Not (a `Or` b)) `Or` c) = a == b && a == c
 isAxiom _ = False
+
+isProof :: [Wff] -> [Wff] -> Bool
+isProof given proof = all isValidStep proof
+  where isValidStep x = isAxiom x
+                        || x `elem` given
+                        || isModusPonens x
+        isModusPonens b = any (`elem` prev) $ map (\a -> (Not a) `Or` b) prev
+          where prev = takeWhile (/= b) proof
