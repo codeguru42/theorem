@@ -9,9 +9,11 @@ module Wff
         Name,
         parse,
         isAxiom,
+        isModusPonens,
         isProof
        ) where
 
+import Control.Applicative (liftA2)
 import Control.Monad (guard)
 import Data.Char (isLower)
 
@@ -53,14 +55,16 @@ isAxiom (Not a `Or` (b `Or` c)) = a == c
 isAxiom ((Not (a `Or` b)) `Or` c) = a == b && a == c
 isAxiom _ = False
 
+isModusPonens :: Wff -> Wff -> Wff -> Bool
+isModusPonens a b c = a == Not b `Or` c
+
 isProof :: [Wff] -> [Wff] -> Bool
 isProof given proof = all isValidStep proof
   where isValidStep x = isAxiom x
                         || x `elem` given
-                        || isModusPonens x (prev x)
-                        || any (isSubstitution x) (prev x)
-        isModusPonens b prev = any (`elem` prev)
-                               $ map (\a -> (Not a) `Or` b) prev
+                        || any ($ x) (liftA2 isModusPonens prev prev)
+                        || any (isSubstitution x) prev
+          where prev = takeWhile (/= x) proof
         isSubstitution x' x = fst $ isSubstitution' [] x' x
           where isSubstitution' subs (Not a') (Not a)
                   = isSubstitution' subs a' a
@@ -74,4 +78,3 @@ isProof given proof = all isValidStep proof
                                                    else (Just wff == sub, subs)
                   where sub = lookup (Var p) subs
                 isSubstitution' subs _ _ = (False, subs)
-        prev x = takeWhile (/= x) proof
