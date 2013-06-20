@@ -10,6 +10,7 @@ module Wff
         parse,
         isAxiom,
         isModusPonens,
+        isSubstitution,
         isProof
        ) where
 
@@ -58,6 +59,18 @@ isAxiom _ = False
 isModusPonens :: Wff -> Wff -> Wff -> Bool
 isModusPonens a b c = a == Not b `Or` c
 
+isSubstitution  :: Wff -> Wff -> Bool
+isSubstitution x' x = fst $ isSubstitution' [] x' x
+  where isSubstitution' subs (Not a') (Not a) = isSubstitution' subs a' a
+        isSubstitution' subs (a' `Or` b') (a `Or` b) = (lSub && rSub, subs'')
+          where (lSub, subs') = isSubstitution' subs a' a
+                (rSub, subs'') =  isSubstitution' subs b' b
+        isSubstitution' subs wff (Var p) = if sub == Nothing
+                                           then (True, (Var p, wff) : subs)
+                                           else (Just wff == sub, subs)
+          where sub = lookup (Var p) subs
+        isSubstitution' subs _ _ = (False, subs)
+
 isProof :: [Wff] -> [Wff] -> Bool
 isProof given proof = all isValidStep proof
   where isValidStep x = isAxiom x
@@ -65,16 +78,3 @@ isProof given proof = all isValidStep proof
                         || any ($ x) (liftA2 isModusPonens prev prev)
                         || any (isSubstitution x) prev
           where prev = takeWhile (/= x) proof
-        isSubstitution x' x = fst $ isSubstitution' [] x' x
-          where isSubstitution' subs (Not a') (Not a)
-                  = isSubstitution' subs a' a
-                isSubstitution' subs (a' `Or` b') (a `Or` b)
-                  = (lSub && rSub, subs'')
-                  where (lSub, subs') = isSubstitution' subs a' a
-                        (rSub, subs'') =  isSubstitution' subs b' b
-                isSubstitution' subs wff (Var p)  = if sub == Nothing
-                                                   then (True,
-                                                         (Var p, wff):subs)
-                                                   else (Just wff == sub, subs)
-                  where sub = lookup (Var p) subs
-                isSubstitution' subs _ _ = (False, subs)

@@ -67,6 +67,17 @@ testIsModusPonens = "Test isModusPonens"
                       where tests = [(True, "[~p|q]", "p", "q")
                                     ]
 
+testIsSubstitution :: Test
+testIsSubstitution = "Test isSubstitution"
+                    ~: TestList
+                    $ map (\(e, i1, i2)
+                           -> show (i1, i2)
+                              ~: Just e
+                              ~=? isSubstitution <$> parse i1 <*> parse i2)
+                    tests
+                      where tests = [(True, "[~[a|b]|q]", "[~p|q]")
+                                    ]
+
 testIsProof = "Test isProof"
               ~: TestList
               $ map (\(e, g, i) ->
@@ -110,4 +121,5 @@ main = do
   runTestTT $ TestList [testParse,
                         testIsAxiom,
                         testIsModusPonens,
+                        testIsSubstitution,
                         testIsProof]
