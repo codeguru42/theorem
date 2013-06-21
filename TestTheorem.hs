@@ -38,7 +38,8 @@ testParse = "Test parse"
                   (Not $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'))
                   `Or` ((Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
                         `Or` (Var 'p' `Or` (Not $ Var 'p'))),
-                  "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
+                  "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"),
+                 (Nothing, "]")
                 ]
 
 testIsAxiom :: Test
@@ -75,7 +76,13 @@ testIsSubstitution = "Test isSubstitution"
                               ~: Just e
                               ~=? isSubstitution <$> parse i1 <*> parse i2)
                     tests
-                      where tests = [(True, "[~[a|b]|q]", "[~p|q]")
+                      where tests = [(True, "[~[a|b]|q]", "[~p|q]"),
+                                     (True, "[[a|b]|[~[a|b]|~c]]",
+                                      "[p|[~p|q]]"),
+                                     (False, "[[a|b]|[~c|q]]",
+                                      "[p|[~p|q]]"),
+                                     (True, "[[a|b]|[~[a|b]|[a|b]]]",
+                                      "[p|[~p|q]]")
                                     ]
 
 testIsProof = "Test isProof"
@@ -83,27 +90,21 @@ testIsProof = "Test isProof"
               $ map (\(e, g, i) ->
                       last i ~: e ~=? isProof (parseWffs g) (parseWffs i))
               tests
-  where tests = [(True,
+  where tests = [(True, -- 1103
                   [],
                   ["[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]",
                    "[~[p|p]|p]",
                    "[~[~p|[p|p]]|[p|~p]]",
                    "[~p|[p|p]]",
-                   "[p|~p]"
-                  ]
-                 ),
-                 (True,
+                   "[p|~p]"]),
+                 (True, -- 1104
                   ["[p|~p]"],
                   ["[p|~p]",
-                   "[~p|~~p]"
-                  ]
-                 ),
+                   "[~p|~~p]"]),
                  (False,
                   ["[~p|~~p]"],
-                  ["[~~~p|p]"
-                  ]
-                 ),
-                 (True,
+                  ["[~~~p|p]"]),
+                 (True, -- 1105
                   ["[p|~p]",
                    "[~p|~~p]"],
                   ["[~[~~p|~~~p]|[~[p|~p]|[~~~p|p]]]",
@@ -111,9 +112,12 @@ testIsProof = "Test isProof"
                    "[~~p|~~~p]",
                    "[~[p|~p]|[~~~p|p]]",
                    "[p|~p]",
-                   "[~~~p|p]"
-                  ]
-                 )
+                   "[~~~p|p]"]),
+                 (True, -- 1107
+                  ["[~p|p]"],
+                  ["[~p|p]",
+                   "[[~p|p]|[~[q|p]|[p|q]]",
+                   "[~[q|p]|[p|q]]"])
                 ]
         parseWffs = catMaybes . map parse
 
