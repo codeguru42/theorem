@@ -64,7 +64,7 @@ isSubstitution x' x = fst $ isSubstitution' [] x' x
   where isSubstitution' subs (Not a') (Not a) = isSubstitution' subs a' a
         isSubstitution' subs (a' `Or` b') (a `Or` b) = (lSub && rSub, subs'')
           where (lSub, subs') = isSubstitution' subs a' a
-                (rSub, subs'') =  isSubstitution' subs b' b
+                (rSub, subs'') =  isSubstitution' subs' b' b
         isSubstitution' subs wff (Var p) = if sub == Nothing
                                            then (True, (Var p, wff) : subs)
                                            else (Just wff == sub, subs)

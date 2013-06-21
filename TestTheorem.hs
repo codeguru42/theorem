@@ -82,7 +82,8 @@ testIsSubstitution = "Test isSubstitution"
                                      (False, "[[a|b]|[~c|q]]",
                                       "[p|[~p|q]]"),
                                      (True, "[[a|b]|[~[a|b]|[a|b]]]",
-                                      "[p|[~p|q]]")
+                                      "[p|[~p|q]]"),
+                                     (False, "[a|b]", "[p|p]")
                                     ]
 
 testIsProof = "Test isProof"
