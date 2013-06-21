@@ -39,7 +39,11 @@ testParse = "Test parse"
                   `Or` ((Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
                         `Or` (Var 'p' `Or` (Not $ Var 'p'))),
                   "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"),
-                 (Nothing, "]")
+                 (Nothing, "]"),
+                 (Just $ (Not $ (Not $ Var 'p') `Or` (Var 'p'))
+                  `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
+                        `Or` ((Var 'p') `Or` (Var 'q'))),
+                        "[~[~p|p]|[~[q|p]|[p|q]]]")
                 ]
 
 testIsAxiom :: Test
@@ -53,7 +57,8 @@ testIsAxiom = "Test isAxiom"
                  (True, "[~[~a|b]|[~[c|a]|[b|c]]]"),
                  (True, "[~[p|p]|p]"),
                  (False, "[~[~p|[p|p]]|[p|~p]]"),
-                 (True, "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
+                 (True, "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"),
+                 (True, "[~[~p|p]|[~[q|p]|[p|q]]]")
                 ]
 
 testIsModusPonens :: Test
@@ -117,7 +122,7 @@ testIsProof = "Test isProof"
                  (True, -- 1107
                   ["[~p|p]"],
                   ["[~p|p]",
-                   "[[~p|p]|[~[q|p]|[p|q]]",
+                   "[~[~p|p]|[~[q|p]|[p|q]]]",
                    "[~[q|p]|[p|q]]"])
                 ]
         parseWffs = catMaybes . map parse
