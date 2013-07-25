@@ -31,25 +31,28 @@ testParse = "Test parse"
                  (Nothing, "[|]"),
                  (Just $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'),
                   "[~[p|p]|p]"),
-                 (Just $ (Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
-                  `Or` (Var 'p' `Or` (Not $ Var 'p')),
+                 (Just $ (Not $ (Not $  Var 'p')
+                                `Or` (Var 'p' `Or` Var 'p'))
+                         `Or` (Var 'p' `Or` (Not $ Var 'p')),
                   "[~[~p|[p|p]]|[p|~p]]"),
                  (Just $
                   (Not $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'))
-                  `Or` ((Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
+                  `Or` ((Not $ (Not $  Var 'p')
+                               `Or` (Var 'p' `Or` Var 'p'))
                         `Or` (Var 'p' `Or` (Not $ Var 'p'))),
                   "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"),
                  (Nothing, "]"),
                  (Just $ (Not $ (Not $ Var 'p') `Or` (Var 'p'))
-                  `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
-                        `Or` ((Var 'p') `Or` (Var 'q'))),
+                         `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
+                               `Or` ((Var 'p') `Or` (Var 'q'))),
                         "[~[~p|p]|[~[q|p]|[p|q]]]")
                 ]
 
 testIsAxiom :: Test
 testIsAxiom = "Test isAxiom"
               ~: TestList
-              $ map (\(e, i) -> i ~: Just e ~=? isAxiom <$> parse i) tests
+              $ map (\(e, i) -> i ~: Just e ~=? isAxiom <$> parse i)
+                tests
   where tests = [(False, "[~p|q]"),
                  (False, "[[~p|q]|r]"),
                  (True, "[~[a|a]|a]"),
@@ -79,7 +82,8 @@ testIsSubstitution = "Test isSubstitution"
                     $ map (\(e, i1, i2)
                            -> show (i1, i2)
                               ~: Just e
-                              ~=? isSubstitution <$> parse i1 <*> parse i2)
+                              ~=? isSubstitution <$> parse i1
+                                                 <*> parse i2)
                     tests
                       where tests = [(True, "[~[a|b]|q]", "[~p|q]"),
                                      (True, "[[a|b]|[~[a|b]|~c]]",
@@ -94,7 +98,8 @@ testIsSubstitution = "Test isSubstitution"
 testIsProof = "Test isProof"
               ~: TestList
               $ map (\(e, g, i) ->
-                      last i ~: e ~=? isProof (parseWffs g) (parseWffs i))
+                      last i ~: e ~=? isProof (parseWffs g)
+                                              (parseWffs i))
               tests
   where tests = [(True, -- 1103
                   [],
