@@ -5,13 +5,13 @@
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
 module Wff
-       (Wff(..),
-        Name,
-        parse,
-        isAxiom,
-        isModusPonens,
-        isSubstitution,
-        isProof
+       ( Wff(..)
+       , Name
+       , parse
+       , isAxiom
+       , isModusPonens
+       , isSubstitution
+       , isProof
        ) where
 
 import Control.Applicative (liftA2)
@@ -67,8 +67,8 @@ isSubstitution x' x = fst $ isSubstitution' [] x' x
           where (lSub, subs') = isSubstitution' subs a' a
                 (rSub, subs'') =  isSubstitution' subs' b' b
         isSubstitution' subs wff (Var p) = if sub == Nothing
-                                           then (True,
-                                                 (Var p, wff) : subs)
+                                           then (True
+                                                ,(Var p, wff) : subs)
                                            else (Just wff == sub, subs)
           where sub = lookup (Var p) subs
         isSubstitution' subs _ _ = (False, subs)

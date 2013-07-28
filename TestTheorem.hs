@@ -13,39 +13,40 @@ import Wff
 testParse :: Test
 testParse = "Test parse"
             ~: TestList $ map (\(e, i) -> i ~: e ~=? parse i) tests
-  where tests = [(Just $ (Not $ Var 'p') `Or` (Var 'q'), "[~p|q]"),
-                 (Just $ (Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r'),
-                  "[[~p|q]|r]"),
-                 (Nothing, "~A"),
-                 (Nothing, "a~b"),
-                 (Nothing, "a|"),
-                 (Nothing, "a|b"),
-                 (Nothing, "~"),
-                 (Just . Not $ Var 'a', "~a"),
-                 (Nothing, "a~"),
-                 (Nothing, "["),
-                 (Nothing, "[a"),
-                 (Nothing, "[a|"),
-                 (Nothing, "[a|b"),
-                 (Nothing, "[a|]"),
-                 (Nothing, "[|]"),
-                 (Just $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'),
-                  "[~[p|p]|p]"),
-                 (Just $ (Not $ (Not $  Var 'p')
-                                `Or` (Var 'p' `Or` Var 'p'))
-                         `Or` (Var 'p' `Or` (Not $ Var 'p')),
-                  "[~[~p|[p|p]]|[p|~p]]"),
-                 (Just $
-                  (Not $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'))
-                  `Or` ((Not $ (Not $  Var 'p')
-                               `Or` (Var 'p' `Or` Var 'p'))
-                        `Or` (Var 'p' `Or` (Not $ Var 'p'))),
-                  "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"),
-                 (Nothing, "]"),
-                 (Just $ (Not $ (Not $ Var 'p') `Or` (Var 'p'))
+  where tests = [(Just $ (Not $ Var 'p') `Or` (Var 'q'), "[~p|q]")
+                ,(Just $ (Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
+                 ,"[[~p|q]|r]")
+                ,(Nothing, "~A")
+                ,(Nothing, "a~b")
+                ,(Nothing, "a|")
+                ,(Nothing, "a|b")
+                ,(Nothing, "~")
+                ,(Just . Not $ Var 'a', "~a")
+                ,(Nothing, "a~")
+                ,(Nothing, "[")
+                ,(Nothing, "[a")
+                ,(Nothing, "[a|")
+                ,(Nothing, "[a|b")
+                ,(Nothing, "[a|]")
+                ,(Nothing, "[|]")
+                ,(Just $ (Not $ (Var 'p') `Or` (Var 'p'))
+                         `Or` (Var 'p')
+                 ,"[~[p|p]|p]")
+                ,(Just $ (Not $ (Not $  Var 'p')
+                              `Or` (Var 'p' `Or` Var 'p'))
+                        `Or` (Var 'p' `Or` (Not $ Var 'p'))
+                 ,"[~[~p|[p|p]]|[p|~p]]")
+                ,(Just $ (Not $ (Not $ (Var 'p') `Or` (Var 'p'))
+                                `Or` (Var 'p'))
+                         `Or` ((Not $ (Not $  Var 'p')
+                                      `Or` (Var 'p' `Or` Var 'p'))
+                               `Or` (Var 'p' `Or` (Not $ Var 'p')))
+                 ,"[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
+                ,(Nothing, "]")
+                ,(Just $ (Not $ (Not $ Var 'p') `Or` (Var 'p'))
                          `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
-                               `Or` ((Var 'p') `Or` (Var 'q'))),
-                        "[~[~p|p]|[~[q|p]|[p|q]]]")
+                               `Or` ((Var 'p') `Or` (Var 'q')))
+                 , "[~[~p|p]|[~[q|p]|[p|q]]]")
                 ]
 
 testIsAxiom :: Test
@@ -53,15 +54,15 @@ testIsAxiom = "Test isAxiom"
               ~: TestList
               $ map (\(e, i) -> i ~: Just e ~=? isAxiom <$> parse i)
                 tests
-  where tests = [(False, "[~p|q]"),
-                 (False, "[[~p|q]|r]"),
-                 (True, "[~[a|a]|a]"),
-                 (True, "[~a|[b|a]]"),
-                 (True, "[~[~a|b]|[~[c|a]|[b|c]]]"),
-                 (True, "[~[p|p]|p]"),
-                 (False, "[~[~p|[p|p]]|[p|~p]]"),
-                 (True, "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"),
-                 (True, "[~[~p|p]|[~[q|p]|[p|q]]]")
+  where tests = [(False, "[~p|q]")
+                ,(False, "[[~p|q]|r]")
+                ,(True, "[~[a|a]|a]")
+                ,(True, "[~a|[b|a]]")
+                ,(True, "[~[~a|b]|[~[c|a]|[b|c]]]")
+                ,(True, "[~[p|p]|p]")
+                ,(False, "[~[~p|[p|p]]|[p|~p]]")
+                ,(True, "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
+                ,(True, "[~[~p|p]|[~[q|p]|[p|q]]]")
                 ]
 
 testIsModusPonens :: Test
@@ -85,14 +86,14 @@ testIsSubstitution = "Test isSubstitution"
                               ~=? isSubstitution <$> parse i1
                                                  <*> parse i2)
                     tests
-                      where tests = [(True, "[~[a|b]|q]", "[~p|q]"),
-                                     (True, "[[a|b]|[~[a|b]|~c]]",
-                                      "[p|[~p|q]]"),
-                                     (False, "[[a|b]|[~c|q]]",
-                                      "[p|[~p|q]]"),
-                                     (True, "[[a|b]|[~[a|b]|[a|b]]]",
-                                      "[p|[~p|q]]"),
-                                     (False, "[a|b]", "[p|p]")
+                      where tests = [(True, "[~[a|b]|q]", "[~p|q]")
+                                    ,(True, "[[a|b]|[~[a|b]|~c]]"
+                                     ,"[p|[~p|q]]")
+                                    ,(False, "[[a|b]|[~c|q]]"
+                                     ,"[p|[~p|q]]")
+                                    ,(True, "[[a|b]|[~[a|b]|[a|b]]]"
+                                     ,"[p|[~p|q]]")
+                                    ,(False, "[a|b]", "[p|p]")
                                     ]
 
 testIsProof = "Test isProof"
@@ -101,40 +102,40 @@ testIsProof = "Test isProof"
                       last i ~: e ~=? isProof (parseWffs g)
                                               (parseWffs i))
               tests
-  where tests = [(True, -- 1103
-                  [],
-                  ["[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]",
-                   "[~[p|p]|p]",
-                   "[~[~p|[p|p]]|[p|~p]]",
-                   "[~p|[p|p]]",
-                   "[p|~p]"]),
-                 (True, -- 1104
-                  ["[p|~p]"],
-                  ["[p|~p]",
-                   "[~p|~~p]"]),
-                 (False,
-                  ["[~p|~~p]"],
-                  ["[~~~p|p]"]),
-                 (True, -- 1105
-                  ["[p|~p]",
-                   "[~p|~~p]"],
-                  ["[~[~~p|~~~p]|[~[p|~p]|[~~~p|p]]]",
-                   "[~p|~~p]",
-                   "[~~p|~~~p]",
-                   "[~[p|~p]|[~~~p|p]]",
-                   "[p|~p]",
-                   "[~~~p|p]"]),
-                 (True, -- 1107
-                  ["[~p|p]"],
-                  ["[~p|p]",
-                   "[~[~p|p]|[~[q|p]|[p|q]]]",
-                   "[~[q|p]|[p|q]]"])
+  where tests = [(True -- 1103
+                 ,[]
+                 ,["[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"
+                  ,"[~[p|p]|p]"
+                  ,"[~[~p|[p|p]]|[p|~p]]"
+                  ,"[~p|[p|p]]"
+                  ,"[p|~p]"])
+                ,(True -- 1104
+                 ,["[p|~p]"]
+                 ,["[p|~p]"
+                  ,"[~p|~~p]"])
+                ,(False
+                 ,["[~p|~~p]"]
+                 ,["[~~~p|p]"])
+                ,(True -- 1105
+                 ,["[p|~p]"
+                  ,"[~p|~~p]"]
+                 ,["[~[~~p|~~~p]|[~[p|~p]|[~~~p|p]]]"
+                  ,"[~p|~~p]"
+                  ,"[~~p|~~~p]"
+                  ,"[~[p|~p]|[~~~p|p]]"
+                  ,"[p|~p]"
+                  ,"[~~~p|p]"])
+                ,(True -- 1107
+                 ,["[~p|p]"]
+                 ,["[~p|p]"
+                  ,"[~[~p|p]|[~[q|p]|[p|q]]]"
+                  ,"[~[q|p]|[p|q]]"])
                 ]
         parseWffs = catMaybes . map parse
 
 main = do
-  runTestTT $ TestList [testParse,
-                        testIsAxiom,
-                        testIsModusPonens,
-                        testIsSubstitution,
-                        testIsProof]
+  runTestTT $ TestList [testParse
+                       ,testIsAxiom
+                       ,testIsModusPonens
+                       ,testIsSubstitution
+                       ,testIsProof]
