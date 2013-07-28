@@ -12,42 +12,32 @@ import Wff
 
 testParse :: Test
 testParse = "Test parse"
-            ~: TestList $ map (\(e, i) -> i ~: e ~=? parse i) tests
-  where tests = [(Just $ (Not $ Var 'p') `Or` (Var 'q'), "[~p|q]")
-                ,(Just $ (Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
+            ~: TestList $ map (\(e, i) -> i ~: Just e ~=? parse i) tests
+  where tests = [((Not $ Var 'p') `Or` (Var 'q'), "[~p|q]")
+                ,((Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
                  ,"[[~p|q]|r]")
-                ,(Nothing, "~A")
-                ,(Nothing, "a~b")
-                ,(Nothing, "a|")
-                ,(Nothing, "a|b")
-                ,(Nothing, "~")
-                ,(Just . Not $ Var 'a', "~a")
-                ,(Nothing, "a~")
-                ,(Nothing, "[")
-                ,(Nothing, "[a")
-                ,(Nothing, "[a|")
-                ,(Nothing, "[a|b")
-                ,(Nothing, "[a|]")
-                ,(Nothing, "[|]")
-                ,(Just $ (Not $ (Var 'p') `Or` (Var 'p'))
-                         `Or` (Var 'p')
+                ,(Not $ Var 'a', "~a")
+                ,((Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p')
                  ,"[~[p|p]|p]")
-                ,(Just $ (Not $ (Not $  Var 'p')
-                              `Or` (Var 'p' `Or` Var 'p'))
-                        `Or` (Var 'p' `Or` (Not $ Var 'p'))
+                ,((Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
+                  `Or` (Var 'p' `Or` (Not $ Var 'p'))
                  ,"[~[~p|[p|p]]|[p|~p]]")
-                ,(Just $ (Not $ (Not $ (Var 'p') `Or` (Var 'p'))
-                                `Or` (Var 'p'))
-                         `Or` ((Not $ (Not $  Var 'p')
-                                      `Or` (Var 'p' `Or` Var 'p'))
-                               `Or` (Var 'p' `Or` (Not $ Var 'p')))
+                ,((Not $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'))
+                   `Or` ((Not $ (Not $  Var 'p')
+                               `Or` (Var 'p' `Or` Var 'p'))
+                         `Or` (Var 'p' `Or` (Not $ Var 'p')))
                  ,"[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
-                ,(Nothing, "]")
-                ,(Just $ (Not $ (Not $ Var 'p') `Or` (Var 'p'))
-                         `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
-                               `Or` ((Var 'p') `Or` (Var 'q')))
+                ,((Not $ (Not $ Var 'p') `Or` (Var 'p'))
+                  `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
+                        `Or` ((Var 'p') `Or` (Var 'q')))
                  , "[~[~p|p]|[~[q|p]|[p|q]]]")
                 ]
+
+testParseError :: Test
+testParseError = "Test parse error conditions"
+            ~: TestList $ map (\i -> i ~: Nothing ~=? parse i) tests
+  where tests = ["~A", "a~b", "a|", "a|b", "~", "a~", "[", "[a", "[a|",
+                 "[a|b", "[a|]", "[|]", "]"]
 
 testIsAxiom :: Test
 testIsAxiom = "Test isAxiom"
@@ -135,6 +125,7 @@ testIsProof = "Test isProof"
 
 main = do
   runTestTT $ TestList [testParse
+                       ,testParseError
                        ,testIsAxiom
                        ,testIsModusPonens
                        ,testIsSubstitution
