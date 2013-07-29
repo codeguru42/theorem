@@ -5,7 +5,6 @@
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
 import Control.Applicative ((<$>), (<*>))
-import Data.Maybe (catMaybes)
 import Test.HUnit.Base (Test(..), (~=?), (~:))
 import Test.HUnit.Text (runTestTT)
 import Wff
@@ -38,6 +37,46 @@ testParseError = "Test parse error conditions"
             ~: TestList $ map (\i -> i ~: Nothing ~=? parse i) tests
   where tests = ["~A", "a~b", "a|", "a|b", "~", "a~", "[", "[a", "[a|",
                  "[a|b", "[a|]", "[|]", "]"]
+
+testParseAll :: Test
+testParseAll = "Test parseAll"
+               ~: TestList
+               $ map
+                 (\(ws, ss) -> show ss ~: ws ~=? parseAll ss)
+                 tests
+  where tests = [(Just [(Not $ Var 'p') `Or` (Var 'q')
+                       ,(Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
+                       ,Not $ Var 'a'
+                       ,(Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p')
+                       ,(Not $ (Not $  Var 'p')
+                               `Or` (Var 'p' `Or` Var 'p'))
+                        `Or` (Var 'p' `Or` (Not $ Var 'p'))
+                       ,(Not $ (Not $ (Var 'p') `Or` (Var 'p'))
+                               `Or` (Var 'p'))
+                        `Or` ((Not $ (Not $  Var 'p')
+                                     `Or` (Var 'p' `Or` Var 'p'))
+                              `Or` (Var 'p' `Or` (Not $ Var 'p')))
+                       ,(Not $ (Not $ Var 'p') `Or` (Var 'p'))
+                        `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
+                              `Or` ((Var 'p') `Or` (Var 'q')))
+                       ]
+                 , ["[~p|q]"
+                   ,"[[~p|q]|r]"
+                   ,"~a"
+                   ,"[~[p|p]|p]"
+                   ,"[~[~p|[p|p]]|[p|~p]]"
+                   ,"[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"
+                   ,"[~[~p|p]|[~[q|p]|[p|q]]]"
+                   ]
+                 )
+                ,(Nothing
+                 ,["[~p|q]"
+                   ,"[[~p|q|r]"
+                   ,"~a"
+                   ,"[~[p|p]|p]"
+                  ]
+                 )
+                ]
 
 testIsAxiom :: Test
 testIsAxiom = "Test isAxiom"
@@ -88,9 +127,9 @@ testIsSubstitution = "Test isSubstitution"
 
 testIsProof = "Test isProof"
               ~: TestList
-              $ map (\(e, g, i) ->
-                      last i ~: e ~=? isProof (parseWffs g)
-                                              (parseWffs i))
+              $ map (\(r, g, i) ->
+                      last i ~: Just r ~=? isProof <$> (parseAll g)
+                                                   <*> (parseAll i))
               tests
   where tests = [(True -- 1103
                  ,[]
@@ -121,11 +160,11 @@ testIsProof = "Test isProof"
                   ,"[~[~p|p]|[~[q|p]|[p|q]]]"
                   ,"[~[q|p]|[p|q]]"])
                 ]
-        parseWffs = catMaybes . map parse
 
 main = do
   runTestTT $ TestList [testParse
                        ,testParseError
+                       ,testParseAll
                        ,testIsAxiom
                        ,testIsModusPonens
                        ,testIsSubstitution

@@ -8,6 +8,7 @@ module Wff
        ( Wff(..)
        , Name
        , parse
+       , parseAll
        , isAxiom
        , isModusPonens
        , isSubstitution
@@ -45,6 +46,9 @@ parse s = do
              guard $ isLower c
              Just (Var c, rest)
            parse' [] = Nothing
+
+parseAll :: [String] -> Maybe [Wff]
+parseAll = mapM parse
 
 isAxiom :: Wff -> Bool
 -- Axiom Schemata 3
