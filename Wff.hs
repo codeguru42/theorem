@@ -31,23 +31,36 @@ instance Show Wff
                show (Not a) = '~' : show a
                show (Or a b) = ('[' : show a) ++ ('|' : show b) ++ "]"
 
-parse :: String -> Maybe Wff
+parse :: String -> Either String Wff
 parse s = do
-  (x, "") <- parse' s
-  Just x
-    where  parse' ('~':rest) = do
-             (a, rest') <- parse' rest
-             Just (Not a, rest')
-           parse' ('[':rest) = do
-             (a, ('|':rest')) <- parse' rest
-             (b, (']':rest'')) <- parse' rest'
-             Just (a `Or` b, rest'')
-           parse' (c:rest) = do
-             guard $ isLower c
-             Just (Var c, rest)
-           parse' [] = Nothing
+  (x, rest) <- parse' s
+  if null rest
+  then return x
+  else Left $ "Input not consumed: " ++ show rest
+    where  parse' s
+             = case s of
+                 ('~':rest) -> do
+                   (a, rest') <- parse' rest
+                   return (Not a, rest')
+                 ('[':rest) -> do
+                   (a, s') <- parse' rest
+                   case s' of
+                     ('|':rest') -> do
+                       (b, s'') <- parse' rest'
+                       case s'' of
+                         (']':rest'') -> return (a `Or` b, rest'')
+                         otherwise -> Left
+                           $ "Expected ']' but got " ++ show (head s'')
+                     otherwise -> Left
+                       $ "Expected '|' but got " ++ show (head s')
+                 (c:rest) -> if isLower c
+                   then return (Var c, rest)
+                   else Left
+                     $ "Expected '~', '[', or lower case but got "
+                       ++ show c
+                 [] -> Left "Unexpected end of input"
 
-parseAll :: [String] -> Maybe [Wff]
+parseAll :: [String] -> Either String [Wff]
 parseAll = mapM parse
 
 isAxiom :: Wff -> Bool

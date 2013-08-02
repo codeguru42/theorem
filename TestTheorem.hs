@@ -5,13 +5,20 @@
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
 import Control.Applicative ((<$>), (<*>))
-import Test.HUnit.Base (Test(..), (~=?), (~:))
+import Test.HUnit.Base (Test(..), (~=?), (~:), (~?))
 import Test.HUnit.Text (runTestTT)
 import Wff
 
+isLeft :: Either a b -> Bool
+isLeft (Left _) = True
+isLeft _ = False
+
+isRight :: Either a b -> Bool
+isRight = not . isLeft
+
 testParse :: Test
 testParse = "Test parse"
-            ~: TestList $ map (\(e, i) -> i ~: Just e ~=? parse i) tests
+            ~: TestList $ map (\(e, i) -> i ~: Right e ~=? parse i) tests
   where tests = [((Not $ Var 'p') `Or` (Var 'q'), "[~p|q]")
                 ,((Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
                  ,"[[~p|q]|r]")
@@ -34,7 +41,10 @@ testParse = "Test parse"
 
 testParseError :: Test
 testParseError = "Test parse error conditions"
-            ~: TestList $ map (\i -> i ~: Nothing ~=? parse i) tests
+            ~: TestList
+            $ map
+              (\i -> i ~: isLeft (parse i) ~? "Expected Left value")
+              tests
   where tests = ["~A", "a~b", "a|", "a|b", "~", "a~", "[", "[a", "[a|",
                  "[a|b", "[a|]", "[|]", "]"]
 
@@ -42,46 +52,53 @@ testParseAll :: Test
 testParseAll = "Test parseAll"
                ~: TestList
                $ map
-                 (\(ws, ss) -> show ss ~: ws ~=? parseAll ss)
+                 (\(ws, ss) -> show ss ~: Right ws ~=? parseAll ss)
                  tests
-  where tests = [(Just [(Not $ Var 'p') `Or` (Var 'q')
-                       ,(Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
-                       ,Not $ Var 'a'
-                       ,(Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p')
-                       ,(Not $ (Not $  Var 'p')
-                               `Or` (Var 'p' `Or` Var 'p'))
-                        `Or` (Var 'p' `Or` (Not $ Var 'p'))
-                       ,(Not $ (Not $ (Var 'p') `Or` (Var 'p'))
-                               `Or` (Var 'p'))
-                        `Or` ((Not $ (Not $  Var 'p')
-                                     `Or` (Var 'p' `Or` Var 'p'))
-                              `Or` (Var 'p' `Or` (Not $ Var 'p')))
-                       ,(Not $ (Not $ Var 'p') `Or` (Var 'p'))
-                        `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
-                              `Or` ((Var 'p') `Or` (Var 'q')))
-                       ]
-                 , ["[~p|q]"
-                   ,"[[~p|q]|r]"
-                   ,"~a"
-                   ,"[~[p|p]|p]"
-                   ,"[~[~p|[p|p]]|[p|~p]]"
-                   ,"[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"
-                   ,"[~[~p|p]|[~[q|p]|[p|q]]]"
-                   ]
-                 )
-                ,(Nothing
+  where tests = [([(Not $ Var 'p') `Or` (Var 'q')
+                  ,(Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
+                  ,Not $ Var 'a'
+                  ,(Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p')
+                  ,(Not $ (Not $  Var 'p')
+                          `Or` (Var 'p' `Or` Var 'p'))
+                   `Or` (Var 'p' `Or` (Not $ Var 'p'))
+                  ,(Not $ (Not $ (Var 'p') `Or` (Var 'p'))
+                          `Or` (Var 'p'))
+                   `Or` ((Not $ (Not $  Var 'p')
+                                `Or` (Var 'p' `Or` Var 'p'))
+                         `Or` (Var 'p' `Or` (Not $ Var 'p')))
+                  ,(Not $ (Not $ Var 'p') `Or` (Var 'p'))
+                   `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
+                         `Or` ((Var 'p') `Or` (Var 'q')))
+                  ]
                  ,["[~p|q]"
-                   ,"[[~p|q|r]"
-                   ,"~a"
-                   ,"[~[p|p]|p]"
+                  ,"[[~p|q]|r]"
+                  ,"~a"
+                  ,"[~[p|p]|p]"
+                  ,"[~[~p|[p|p]]|[p|~p]]"
+                  ,"[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"
+                  ,"[~[~p|p]|[~[q|p]|[p|q]]]"
                   ]
                  )
+                ]
+
+testParseAllError :: Test
+testParseAllError = "Test parseAll"
+               ~: TestList
+               $ map
+               (\ss -> show ss ~: isLeft (parseAll ss)
+                               ~? "Expected Left value")
+               tests
+  where tests = [["[~p|q]"
+                  ,"[[~p|q|r]"
+                  ,"~a"
+                  ,"[~[p|p]|p]"
+                 ]
                 ]
 
 testIsAxiom :: Test
 testIsAxiom = "Test isAxiom"
               ~: TestList
-              $ map (\(e, i) -> i ~: Just e ~=? isAxiom <$> parse i)
+              $ map (\(e, i) -> i ~: Right e ~=? isAxiom <$> parse i)
                 tests
   where tests = [(False, "[~p|q]")
                 ,(False, "[[~p|q]|r]")
@@ -99,7 +116,7 @@ testIsModusPonens = "Test isModusPonens"
                     ~: TestList
                     $ map (\(e, i1, i2, i3)
                            -> show (i1, i2, i3)
-                              ~: Just e
+                              ~: Right e
                               ~=? isModusPonens
                               <$> parse i1 <*> parse i2 <*> parse i3)
                     tests
@@ -111,7 +128,7 @@ testIsSubstitution = "Test isSubstitution"
                     ~: TestList
                     $ map (\(e, i1, i2)
                            -> show (i1, i2)
-                              ~: Just e
+                              ~: Right e
                               ~=? isSubstitution <$> parse i1
                                                  <*> parse i2)
                     tests
@@ -128,7 +145,7 @@ testIsSubstitution = "Test isSubstitution"
 testIsProof = "Test isProof"
               ~: TestList
               $ map (\(r, g, i) ->
-                      last i ~: Just r ~=? isProof <$> (parseAll g)
+                      last i ~: Right r ~=? isProof <$> (parseAll g)
                                                    <*> (parseAll i))
               tests
   where tests = [(True -- 1103
