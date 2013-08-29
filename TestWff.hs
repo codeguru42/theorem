@@ -16,6 +16,7 @@ allTests = "Test Wff"
                 [ testParse
                 , testParseError
                 , testParseAll
+                , testParseAllError
                 ]
 
 isLeft :: Either a b -> Bool
