@@ -4,10 +4,17 @@
 -- To Public License, Version 2, as published by Sam Hocevar. See
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
-import Control.Applicative ((<$>), (<*>))
 import Test.HUnit.Base (Test(..), (~=?), (~:), (~?))
 import Test.HUnit.Text (runTestTT)
 import Wff
+
+allTests :: Test
+allTests = "Test Wff"
+            ~: TestList
+                [ testParse
+                , testParseError
+                , testParseAll
+                ]
 
 isLeft :: Either a b -> Bool
 isLeft (Left _) = True
@@ -95,8 +102,4 @@ testParseAllError = "Test parseAll"
                  ]
                 ]
 
-main = do
-  runTestTT $ TestList [ testParse
-                       , testParseError
-                       , testParseAll
-                       ]
+main = runTestTT allTests 
