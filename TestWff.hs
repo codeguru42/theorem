@@ -12,12 +12,12 @@ import Wff
 
 allTests :: Test
 allTests = "Test Wff"
-            ~: TestList
-                [ testParse
-                , testParseError
-                , testParseAll
-                , testParseAllError
-                ]
+        ~: TestList
+         [ testParse
+         , testParseError
+         , testParseAll
+         , testParseAllError
+         ]
 
 isLeft :: Either a b -> Bool
 isLeft (Left _) = True
@@ -28,7 +28,13 @@ isRight = not . isLeft
 
 testParse :: Test
 testParse = "Test parse"
-            ~: TestList $ map (\(e, i) -> i ~: Right e ~=? parse i) tests
+         ~: TestList
+          $ map
+            (\(e, i)
+             -> i
+             ~: Right e
+            ~=? parse i)
+            tests
   where tests = [((Not $ Var 'p') `Or` (Var 'q'), "[~p|q]")
                 ,((Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
                  ,"[[~p|q]|r]")
@@ -51,19 +57,25 @@ testParse = "Test parse"
 
 testParseError :: Test
 testParseError = "Test parse error conditions"
-            ~: TestList
-            $ map
-              (\i -> i ~: isLeft (parse i) ~? "Expected Left value")
-              tests
+              ~: TestList
+               $ map
+                 (\i
+                  -> i
+                  ~: isLeft (parse i)
+                  ~? "Expected Left value")
+                 tests
   where tests = ["~A", "a~b", "a|", "a|b", "~", "a~", "[", "[a", "[a|",
                  "[a|b", "[a|]", "[|]", "]"]
 
 testParseAll :: Test
 testParseAll = "Test parseAll"
-               ~: TestList
-               $ map
-                 (\(ws, ss) -> show ss ~: Right ws ~=? parseAll ss)
-                 tests
+            ~: TestList
+             $ map
+               (\(ws, ss)
+                -> show ss
+                ~: Right ws
+               ~=? parseAll ss)
+               tests
   where tests = [([(Not $ Var 'p') `Or` (Var 'q')
                   ,(Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
                   ,Not $ Var 'a'
@@ -93,11 +105,13 @@ testParseAll = "Test parseAll"
 
 testParseAllError :: Test
 testParseAllError = "Test parseAll"
-               ~: TestList
-               $ map
-               (\ss -> show ss ~: isLeft (parseAll ss)
-                               ~? "Expected Left value")
-               tests
+                 ~: TestList
+                  $ map
+                   (\ss
+                    -> show ss
+                    ~: isLeft (parseAll ss)
+                    ~? "Expected Left value")
+                   tests
   where tests = [["[~p|q]"
                  ,"[[~p|q|r]"
                  ,"~a"
