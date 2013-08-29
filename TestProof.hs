@@ -4,6 +4,8 @@
 -- To Public License, Version 2, as published by Sam Hocevar. See
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
+module TestProof (allTests) where
+
 import Control.Applicative ((<$>), (<*>))
 import Proof
 import Test.HUnit.Base (Test(..), (~=?), (~:), (~?))
@@ -101,5 +103,3 @@ testIsProof = "Test isProof"
                   ,"[~[~p|p]|[~[q|p]|[p|q]]]"
                   ,"[~[q|p]|[p|q]]"])
                 ]
-
-main = runTestTT allTests

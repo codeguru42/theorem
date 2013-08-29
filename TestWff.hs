@@ -4,6 +4,8 @@
 -- To Public License, Version 2, as published by Sam Hocevar. See
 -- http://sam.zoy.org/wtfpl/COPYING for more details.
 
+module TestWff (allTests) where
+
 import Test.HUnit.Base (Test(..), (~=?), (~:), (~?))
 import Test.HUnit.Text (runTestTT)
 import Wff
@@ -101,5 +103,3 @@ testParseAllError = "Test parseAll"
                  ,"[~[p|p]|p]"
                  ]
                 ]
-
-main = runTestTT allTests 
