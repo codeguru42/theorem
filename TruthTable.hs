@@ -11,5 +11,5 @@ module TruthTable
 truthTable :: Int -> [[Bool]]
 truthTable n = map column [1..n]
     where column k = take (2 ^ n)
-                        $ cycle ((take (2 ^ (n - k)) $ repeat True)
-                              ++ (take (2 ^ (n - k)) $ repeat False))
+                        . cycle $ replicate (2 ^ (n - k)) True
+                              ++ replicate (2 ^ (n - k)) False
