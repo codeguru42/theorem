@@ -8,8 +8,17 @@ module TruthTable
     ( truthTable
     ) where
 
-truthTable :: Int -> [[Bool]]
-truthTable n = map column [1..n]
-    where column k = take (2 ^ n)
-                        . cycle $ replicate (2 ^ (n - k)) True
-                              ++ replicate (2 ^ (n - k)) False
+import Control.Applicative ((<$>), (<*>))
+
+-- `truthTable n` returns a list of the values in each row of a truth table
+-- for an expression with `n` propositional variables.
+truthTable :: Int -- the number of variables in the truth table
+           -> [[Bool]]
+truthTable n = cross $ replicate n [True, False]
+
+-- `cross xs` returns a list of lists of length `n` where `n = length xs`. The
+-- resulting list contains the cross product of the lists in `xs`.
+cross :: [[a]] -- the lists to take the cross product of
+      -> [[a]]
+cross [] = [[]]
+cross (x:xs) = (:) <$> x <*> cross xs
