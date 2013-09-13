@@ -6,15 +6,20 @@
 
 module TruthTable
     ( truthTable
+    , assignments
     ) where
 
 import Control.Applicative ((<$>), (<*>))
+import Wff (Name)
 
 -- `truthTable n` returns a list of the values in each row of a truth table
 -- for an expression with `n` propositional variables.
 truthTable :: Int -- the number of variables in the truth table
            -> [[Bool]]
 truthTable n = cross $ replicate n [True, False]
+
+assignments :: [Name] -> [[(Name, Bool)]]
+assignments ps = map (zip ps) . truthTable $ length ps
 
 -- `cross xs` returns a list of lists of length `n` where `n = length xs`. The
 -- resulting list contains the cross product of the lists in `xs`.

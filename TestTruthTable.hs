@@ -10,7 +10,11 @@ import Test.HUnit.Base (Test(..), (~=?), (~:), (~?))
 import TruthTable
 
 allTests :: Test
-allTests = TestList [testTruthTable]
+allTests = "Test TruthTable"
+        ~: TestList
+         [ testTruthTable
+         , testAssignments
+         ]
 
 testTruthTable :: Test
 testTruthTable = "Test truthTable"
@@ -38,3 +42,38 @@ testTruthTable = "Test truthTable"
                       ,[False, False, False]
                       ]
                      ]
+
+testAssignments :: Test
+testAssignments =  "Test truthTable"
+               ~: TestList
+                . map (\(e, vars)
+                       -> show vars
+                       ~: e
+                      ~=? assignments vars
+                      )
+                $ tests
+    where tests = [([[('p', True)]
+                    ,[('p', False)]
+                    ]
+                   ,take 1 vars
+                   )
+                   ,([[('p', True ), ('q', True )]
+                     ,[('p', True ), ('q', False)]
+                     ,[('p', False), ('q', True )]
+                     ,[('p', False), ('q', False)]
+                     ]
+                    ,take 2 vars
+                    )
+                   ,([[('p', True ), ('q', True ), ('r', True )]
+                     ,[('p', True ), ('q', True ), ('r', False)]
+                     ,[('p', True ), ('q', False), ('r', True )]
+                     ,[('p', True ), ('q', False), ('r', False)]
+                     ,[('p', False), ('q', True ), ('r', True )]
+                     ,[('p', False), ('q', True ), ('r', False)]
+                     ,[('p', False), ('q', False), ('r', True )]
+                     ,[('p', False), ('q', False), ('r', False)]
+                     ]
+                    ,take 3 vars
+                    )
+                   ]
+          vars = ['p', 'q', 'r']
