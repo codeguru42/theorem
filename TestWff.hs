@@ -6,8 +6,10 @@
 
 module TestWff (allTests) where
 
+import Control.Applicative ((<$>), (<*>))
 import Test.HUnit.Base (Test(..), (~=?), (~:), (~?))
 import Test.HUnit.Text (runTestTT)
+import TruthTable
 import Wff
 
 allTests :: Test
@@ -17,6 +19,7 @@ allTests = "Test Wff"
          , testParseError
          , testParseAll
          , testParseAllError
+         , testEval
          ]
 
 isLeft :: Either a b -> Bool
@@ -118,3 +121,12 @@ testParseAllError = "Test parseAll"
                  ,"[~[p|p]|p]"
                  ]
                 ]
+
+testEval :: Test
+testEval = "Test eval"
+        ~: return expected
+       ~=? eval wff assignment
+    where expected = True
+          assignment = [('p', True)]
+          Right wff = parse wffStr
+          wffStr = "p"

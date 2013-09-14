@@ -9,6 +9,7 @@ module Wff
        , Name
        , parse
        , parseAll
+       , eval
        ) where
 
 import Control.Applicative (liftA2)
@@ -58,3 +59,10 @@ parse s = do
 
 parseAll :: [String] -> Either String [Wff]
 parseAll = mapM parse
+
+type Assignment = [(Name, Bool)]
+
+eval :: Wff -> Assignment -> Maybe Bool
+eval (Var p)    assignment = lookup p assignment
+eval (Not a)    assignment = undefined
+eval (a `Or` b) assignment = undefined
