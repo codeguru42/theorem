@@ -124,8 +124,9 @@ testParseAllError = "Test parseAll"
 
 testEval :: Test
 testEval = "Test eval"
-        ~: TestList $ zipWith (\e (Just a) -> e ~=? a) expected (eval wff <$> assignments)
-    where expected = [True, False]
+        ~: TestList $ zipWith (\e (Just a) -> e ~=? a) expecteds actuals
+    where expecteds = [True, False]
+          actuals = eval wff <$> assignments
           assignments = [[('p', True)], [('p', False)]]
           Right wff = parse wffStr
           wffStr = "p"
