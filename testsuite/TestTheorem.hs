@@ -7,9 +7,11 @@
 import Test.HUnit.Base (Test(TestList))
 import Test.HUnit.Text (runTestTT)
 import TestProof (allTests)
+import TestTruthTable (allTests)
 import TestWff (allTests)
 
 main = runTestTT $ TestList 
                     [ TestWff.allTests
                     , TestProof.allTests
+                    , TestTruthTable.allTests
                     ]
