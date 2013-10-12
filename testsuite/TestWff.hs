@@ -10,6 +10,7 @@ import Control.Applicative ((<$>), (<*>))
 import Test.HUnit.Base (Test(..), (~=?), (~:), (~?))
 import Test.HUnit.Text (runTestTT)
 import TruthTable
+import Utils
 import Wff
 
 allTests :: Test
@@ -30,33 +31,28 @@ isRight :: Either a b -> Bool
 isRight = not . isLeft
 
 testParse :: Test
-testParse = "Test parse"
-         ~: TestList
-          $ map
-            (\(e, i)
-             -> i
-             ~: Right e
-            ~=? parse i)
-            tests
-  where tests = [((Not $ Var 'p') `Or` (Var 'q'), "[~p|q]")
-                ,((Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
-                 ,"[[~p|q]|r]")
-                ,(Not $ Var 'a', "~a")
-                ,((Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p')
-                 ,"[~[p|p]|p]")
-                ,((Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
-                  `Or` (Var 'p' `Or` (Not $ Var 'p'))
-                 ,"[~[~p|[p|p]]|[p|~p]]")
-                ,((Not $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'))
-                   `Or` ((Not $ (Not $  Var 'p')
-                               `Or` (Var 'p' `Or` Var 'p'))
-                         `Or` (Var 'p' `Or` (Not $ Var 'p')))
-                 ,"[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]")
-                ,((Not $ (Not $ Var 'p') `Or` (Var 'p'))
-                  `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
-                        `Or` ((Var 'p') `Or` (Var 'q')))
-                 , "[~[~p|p]|[~[q|p]|[p|q]]]")
-                ]
+testParse = "Test parse" ~: makeTestList (map Right expecteds) (map parse inputs)
+    where expecteds = [ (Not $ Var 'p') `Or` (Var 'q')
+                      , (Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
+                      , Not $ Var 'a'
+                      , (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p')
+                      , (Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
+                            `Or` (Var 'p' `Or` (Not $ Var 'p'))
+                      , (Not $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'))
+                            `Or` ((Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
+                                    `Or` (Var 'p' `Or` (Not $ Var 'p')))
+                      , (Not $ (Not $ Var 'p') `Or` (Var 'p'))
+                            `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
+                                `Or` ((Var 'p') `Or` (Var 'q')))
+                      ]
+          inputs    = [ "[~p|q]"
+                      , "[[~p|q]|r]"
+                      , "~a"
+                      , "[~[p|p]|p]"
+                      , "[~[~p|[p|p]]|[p|~p]]"
+                      , "[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"
+                      , "[~[~p|p]|[~[q|p]|[p|q]]]"
+                      ]
 
 testParseError :: Test
 testParseError = "Test parse error conditions"
@@ -67,44 +63,35 @@ testParseError = "Test parse error conditions"
                   ~: isLeft (parse i)
                   ~? "Expected Left value")
                  tests
-  where tests = ["~A", "a~b", "a|", "a|b", "~", "a~", "[", "[a", "[a|",
-                 "[a|b", "[a|]", "[|]", "]"]
+    where tests = ["~A", "a~b", "a|", "a|b", "~", "a~", "[", "[a", "[a|",
+                   "[a|b", "[a|]", "[|]", "]"]
 
 testParseAll :: Test
-testParseAll = "Test parseAll"
-            ~: TestList
-             $ map
-               (\(ws, ss)
-                -> show ss
-                ~: Right ws
-               ~=? parseAll ss)
-               tests
-  where tests = [([(Not $ Var 'p') `Or` (Var 'q')
-                  ,(Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
-                  ,Not $ Var 'a'
-                  ,(Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p')
-                  ,(Not $ (Not $  Var 'p')
-                          `Or` (Var 'p' `Or` Var 'p'))
-                   `Or` (Var 'p' `Or` (Not $ Var 'p'))
-                  ,(Not $ (Not $ (Var 'p') `Or` (Var 'p'))
-                          `Or` (Var 'p'))
-                   `Or` ((Not $ (Not $  Var 'p')
+testParseAll = "Test parseAll" ~: makeTestList (map Right expecteds) (map parseAll actuals)
+    where expecteds = [ [ (Not $ Var 'p') `Or` (Var 'q')
+                        , (Not $ Var 'p') `Or` (Var 'q') `Or` (Var 'r')
+                        , Not $ Var 'a'
+                        , (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p')
+                        , (Not $ (Not $  Var 'p') `Or` (Var 'p' `Or` Var 'p'))
+                            `Or` (Var 'p' `Or` (Not $ Var 'p'))
+                        , (Not $ (Not $ (Var 'p') `Or` (Var 'p')) `Or` (Var 'p'))
+                            `Or` ((Not $ (Not $  Var 'p')
                                 `Or` (Var 'p' `Or` Var 'p'))
-                         `Or` (Var 'p' `Or` (Not $ Var 'p')))
-                  ,(Not $ (Not $ Var 'p') `Or` (Var 'p'))
-                   `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
-                         `Or` ((Var 'p') `Or` (Var 'q')))
-                  ]
-                 ,["[~p|q]"
-                  ,"[[~p|q]|r]"
-                  ,"~a"
-                  ,"[~[p|p]|p]"
-                  ,"[~[~p|[p|p]]|[p|~p]]"
-                  ,"[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"
-                  ,"[~[~p|p]|[~[q|p]|[p|q]]]"
-                  ]
-                 )
-                ]
+                                `Or` (Var 'p' `Or` (Not $ Var 'p')))
+                        , (Not $ (Not $ Var 'p') `Or` (Var 'p'))
+                            `Or` ((Not $ (Var 'q') `Or` (Var 'p'))
+                            `Or` ((Var 'p') `Or` (Var 'q')))
+                        ]
+                      ]
+          actuals = [ ["[~p|q]"
+                      ,"[[~p|q]|r]"
+                      ,"~a"
+                      ,"[~[p|p]|p]"
+                      ,"[~[~p|[p|p]]|[p|~p]]"
+                      ,"[~[~[p|p]|p]|[~[~p|[p|p]]|[p|~p]]]"
+                      ,"[~[~p|p]|[~[q|p]|[p|q]]]"
+                      ]
+                    ]
 
 testParseAllError :: Test
 testParseAllError = "Test parseAll"
@@ -123,10 +110,29 @@ testParseAllError = "Test parseAll"
                 ]
 
 testEval :: Test
-testEval = "Test eval"
-        ~: TestList $ zipWith (\e (Just a) -> e ~=? a) expecteds actuals
-    where expecteds = [True, False]
-          actuals = eval wff <$> assignments
-          assignments = [[('p', True)], [('p', False)]]
-          Right wff = parse wffStr
-          wffStr = "p"
+testEval = TestList $ zipWith3 testEval' wffStrs expecteds actuals
+    where testEval' wffStr expecteds actuals = wffStr ~: makeTestList (map (Right . Just) expecteds) actuals
+          expecteds   = [ [True, False]
+                        , [False, True]
+                        , [True, True, True, False]
+                        ]
+          actuals     = zipWith actuals' wffs assignments
+          actuals' (Left s) assignments' = replicate (length assignments') (Left s)
+          actuals' (Right wff) assignments' = map (Right . eval wff) assignments'
+          assignments = [ [ [('p', True )]
+                          , [('p', False)]
+                          ]
+                        , [ [('p', True )]
+                          , [('p', False)]
+                          ]
+                        , [ [('p', True ), ('q', True )]
+                          , [('p', True ), ('q', False)]
+                          , [('p', False), ('q', True )]
+                          , [('p', False), ('q', False)]
+                          ]
+                        ]
+          wffs        = map parse wffStrs
+          wffStrs     = [ "p"
+                        , "~p"
+                        , "[p|q]"
+                        ]

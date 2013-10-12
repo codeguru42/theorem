@@ -12,7 +12,7 @@ module Wff
        , eval
        ) where
 
-import Control.Applicative (liftA2)
+import Control.Applicative (liftA2, (<$>), (<*>))
 import Control.Monad (guard)
 import Data.Char (isLower)
 
@@ -64,5 +64,5 @@ type Assignment = [(Name, Bool)]
 
 eval :: Wff -> Assignment -> Maybe Bool
 eval (Var p)    assignment = lookup p assignment
-eval (Not a)    assignment = undefined
-eval (a `Or` b) assignment = undefined
+eval (Not a)    assignment = not <$> eval a assignment
+eval (a `Or` b) assignment = (||) <$> eval a assignment <*> eval b assignment
