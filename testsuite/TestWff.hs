@@ -115,6 +115,9 @@ testEval = TestList $ zipWith3 testEval' wffStrs expecteds actuals
           expecteds      = [ [True, False]
                            , [False, True]
                            , [True, True, True, False]
+                           , [True, True, True, False
+                             ,True, True, True, True
+                             ]
                            ]
           actuals        = zipWith actuals' wffs allAssignments
           actuals' (Left s) assignments' = replicate (length assignments') (Left s)
@@ -122,10 +125,12 @@ testEval = TestList $ zipWith3 testEval' wffStrs expecteds actuals
           vars           = [ ['p']
                            , ['p']
                            , ['p', 'q']
+                           , ['p', 'q', 'r']
                            ]
           allAssignments = map assignments vars
           wffs           = map parse wffStrs
           wffStrs        = [ "p"
                            , "~p"
                            , "[p|q]"
+                           , "[~p|[q|r]]"
                            ]
