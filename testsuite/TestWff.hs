@@ -112,27 +112,20 @@ testParseAllError = "Test parseAll"
 testEval :: Test
 testEval = TestList $ zipWith3 testEval' wffStrs expecteds actuals
     where testEval' wffStr expecteds actuals = wffStr ~: makeTestList (map (Right . Just) expecteds) actuals
-          expecteds   = [ [True, False]
-                        , [False, True]
-                        , [True, True, True, False]
-                        ]
-          actuals     = zipWith actuals' wffs assignments
+          expecteds      = [ [True, False]
+                           , [False, True]
+                           , [True, True, True, False]
+                           ]
+          actuals        = zipWith actuals' wffs allAssignments
           actuals' (Left s) assignments' = replicate (length assignments') (Left s)
           actuals' (Right wff) assignments' = map (Right . eval wff) assignments'
-          assignments = [ [ [('p', True )]
-                          , [('p', False)]
-                          ]
-                        , [ [('p', True )]
-                          , [('p', False)]
-                          ]
-                        , [ [('p', True ), ('q', True )]
-                          , [('p', True ), ('q', False)]
-                          , [('p', False), ('q', True )]
-                          , [('p', False), ('q', False)]
-                          ]
-                        ]
-          wffs        = map parse wffStrs
-          wffStrs     = [ "p"
-                        , "~p"
-                        , "[p|q]"
-                        ]
+          vars           = [ ['p']
+                           , ['p']
+                           , ['p', 'q']
+                           ]
+          allAssignments = map assignments vars
+          wffs           = map parse wffStrs
+          wffStrs        = [ "p"
+                           , "~p"
+                           , "[p|q]"
+                           ]
